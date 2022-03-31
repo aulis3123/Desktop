@@ -1,0 +1,46 @@
+from selenium import webdriver
+
+# pane siia õige url
+defaultURL = 'https://www.kv.ee/?act=search.simple&last_deal_type=3&deal_type=1&dt_select=3&search_type=old'
+
+# pane siia õige rada
+chromeDriver = 'C:/Users/Aulis/Downloads/chromedriver_win32/chromedriver.exe'
+
+def startSelenium():
+    optionss = webdriver.ChromeOptions()
+    optionss.add_argument('--disable-blink-features=AutomationControlled')
+    optionss.add_experimental_option("excludeSwitches", ["enable-automation"])
+    optionss.add_experimental_option('useAutomationExtension', False)
+
+    optionss.add_argument("window-size=1600,1200")
+    from fake_useragent import UserAgent
+    ua = UserAgent()
+    user_agent = ua.random
+    print(user_agent)
+    optionss.add_argument(f'user-agent={user_agent}')
+
+    browser = webdriver.Chrome(options=optionss, executable_path=chromeDriver)
+    browser.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    browser.get(defaultURL)
+    return browser
+
+driver = startSelenium()
+parsedURL = defaultURL
+driver.get(parsedURL)
+source = driver.page_source
+from bs4 import BeautifulSoup
+
+#print(source)
+doc = BeautifulSoup(source, "html.parser")
+objektid = doc.find_all("div", {"id": "res"})
+for objekt in objektid:
+    nimed = objekt.find_all("a", {"class": "object-title-a text-truncate"})
+    hinnad = objekt.find_all("p", {"class": "object-price-value"})
+    for nimi in nimed:
+        nimi1 = (nimi.text.strip())
+        print(nimi1)
+    for hind in hinnad:
+        hind1 = (hind.text.strip())
+        print(hind1)
+
+# ja siis pane source'i pihta igasugu BeautifulSoup värki nii nagu jaksad
